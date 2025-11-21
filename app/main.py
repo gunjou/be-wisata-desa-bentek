@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .auth import router as auth_router
 from .destinasi import router as destinasi_router
@@ -21,6 +22,15 @@ app = FastAPI(
     version="1.0.0",
     openapi_tags=tags_metadata,
     swagger_ui_parameters={"docExpansion": "none"},
+)
+
+# Konfigurasi CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Mengizinkan semua domain
+    allow_credentials=True,
+    allow_methods=["*"],  # Mengizinkan semua metode HTTP
+    allow_headers=["*"],  # Mengizinkan semua headers
 )
 
 # Mendaftarkan router dari auth.py
