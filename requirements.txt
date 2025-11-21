@@ -11,6 +11,7 @@ fastapi==0.121.3
 fastapi-cli==0.0.16
 fastapi-cloud-cli==0.5.1
 fastar==0.6.0
+gunicorn==23.0.0
 h11==0.16.0
 httpcore==1.0.9
 httptools==0.7.1
@@ -21,6 +22,7 @@ jose==1.0.0
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
+packaging==25.0
 psycopg2==2.9.11
 pyasn1==0.6.1
 pydantic==2.12.4
