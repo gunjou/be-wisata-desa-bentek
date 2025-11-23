@@ -13,6 +13,7 @@ class BlogResponse(BaseModel):
     title: str
     content: str
     image_url: Optional[str] = None  # Nullable
+    post_url: Optional[str] = None   # Nullable
     created_at: str
     updated_at: str
 
@@ -20,11 +21,13 @@ class BlogCreate(BaseModel):
     title: str
     content: str
     image_url: Optional[str] = None  # Nullable
+    post_url: Optional[str] = None
     
 class BlogUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     image_url: Optional[str] = None
+    post_url: Optional[str] = None
 
 
 @router.get("/blog", response_model=List[BlogResponse], tags=["Blog"])
@@ -48,15 +51,15 @@ async def get_blog(id: int):
 @router.post("/blog", response_model=BlogResponse, tags=["Blog"])
 async def create_blog(blog_create: BlogCreate, token: str = Depends(validate_jwt_token)):
     """Endpoint untuk menambah blog baru"""
-    # Memanggil fungsi query untuk menambah blog baru
     new_blog = add_blog(
         title=blog_create.title,
         content=blog_create.content,
-        image_url=blog_create.image_url
+        image_url=blog_create.image_url,
+        post_url=blog_create.post_url
     )
     if not new_blog:
         raise HTTPException(status_code=400, detail="Failed to add blog")
-    return new_blog  # Mengembalikan blog yang baru ditambahkan
+    return new_blog
 
 @router.put("/blog/{id}", response_model=BlogResponse, tags=["Blog"])
 async def update_blog_endpoint(id: int, blog_update: BlogUpdate, token: str = Depends(validate_jwt_token)):
@@ -65,7 +68,8 @@ async def update_blog_endpoint(id: int, blog_update: BlogUpdate, token: str = De
         blog_id=id,
         title=blog_update.title,
         content=blog_update.content,
-        image_url=blog_update.image_url
+        image_url=blog_update.image_url,
+        post_url=blog_update.post_url
     )
     if not updated_blog:
         raise HTTPException(status_code=400, detail="Failed to update blog")

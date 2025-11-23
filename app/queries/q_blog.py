@@ -9,98 +9,96 @@ def get_all_blogs():
     """Fungsi untuk mengambil semua blog dengan status aktif"""
     conn = get_connection()  # Membuka koneksi ke database
     try:
-        with conn.connect() as connection:  # Memulai transaksi untuk operasi yang memerlukan commit
+        with conn.connect() as connection:
             query = text("""
-                SELECT id_blog, title, content, image_url, created_at, updated_at
+                SELECT id_blog, title, content, image_url, post_url, created_at, updated_at
                 FROM blogs
                 WHERE status = 1
                 ORDER BY created_at DESC;
             """)
 
-            # Menjalankan query dan mengambil hasilnya
             result = connection.execute(query).mappings().fetchall()
 
             if result:
-                # Mengembalikan hasil dalam bentuk list of dictionaries
                 return [
                     {
                         "id_blog": row["id_blog"],
                         "title": row["title"],
                         "content": row["content"],
                         "image_url": row["image_url"],
+                        "post_url": row["post_url"],
                         "created_at": str(row["created_at"]),
                         "updated_at": str(row["updated_at"]),
                     }
                     for row in result
                 ]
-            return []  # Mengembalikan list kosong jika tidak ada blog
+            return []
     except SQLAlchemyError as e:
         print(f"Database error occurred: {str(e)}")
         return None
 
 def get_blog_by_id(blog_id: int):
-    """Fungsi untuk mengambil blog berdasarkan ID dengan status aktif"""
-    conn = get_connection()  # Membuka koneksi ke database
+    conn = get_connection()
     try:
-        with conn.connect() as connection:  # Memulai transaksi untuk operasi yang memerlukan commit
+        with conn.connect() as connection:
             query = text("""
-                SELECT id_blog, title, content, image_url, created_at, updated_at
+                SELECT id_blog, title, content, image_url, post_url, created_at, updated_at
                 FROM blogs
                 WHERE id_blog = :id_blog AND status = 1
                 LIMIT 1;
             """)
 
-            # Menjalankan query dengan parameter id_blog
             result = connection.execute(query, {"id_blog": blog_id}).mappings().fetchone()
 
             if result:
-                # Mengembalikan hasil dalam bentuk dictionary
                 return {
                     "id_blog": result["id_blog"],
                     "title": result["title"],
                     "content": result["content"],
                     "image_url": result["image_url"],
+                    "post_url": result["post_url"],
                     "created_at": str(result["created_at"]),
                     "updated_at": str(result["updated_at"]),
                 }
-            return None  # Mengembalikan None jika blog tidak ditemukan
+            return None
     except SQLAlchemyError as e:
         print(f"Database error occurred: {str(e)}")
         return None
     
-def add_blog(title: str, content: str, image_url: Optional[str]):
+def add_blog(title: str, content: str, image_url: Optional[str], post_url: Optional[str]):
     """Fungsi untuk menambah blog baru ke database"""
-    conn = get_connection()  # Membuka koneksi ke database
+    conn = get_connection()
     try:
-        with conn.begin() as connection:  # Memulai transaksi untuk operasi yang memerlukan commit
+        with conn.begin() as connection:
             query = text("""
-                INSERT INTO blogs (title, content, image_url, status, created_at, updated_at)
-                VALUES (:title, :content, :image_url, 1, NOW(), NOW())
-                RETURNING id_blog, title, content, image_url, created_at, updated_at;
+                INSERT INTO blogs (title, content, image_url, post_url, status, created_at, updated_at)
+                VALUES (:title, :content, :image_url, :post_url, 1, NOW(), NOW())
+                RETURNING id_blog, title, content, image_url, post_url, created_at, updated_at;
             """)
 
             result = connection.execute(query, {
                 "title": title,
                 "content": content,
-                "image_url": image_url
-            }).fetchone()  # Mengambil hasil satu baris hasil eksekusi query
+                "image_url": image_url,
+                "post_url": post_url
+            }).fetchone()
 
             if result:
-                # Mengembalikan hasil dalam bentuk dictionary
                 return {
                     "id_blog": result[0],
                     "title": result[1],
                     "content": result[2],
                     "image_url": result[3],
-                    "created_at": str(result[4]),
-                    "updated_at": str(result[5]),
+                    "post_url": result[4],
+                    "created_at": str(result[5]),
+                    "updated_at": str(result[6]),
                 }
-            return None  # Jika gagal menambah blog
+            return None
     except SQLAlchemyError as e:
         print(f"Database error occurred: {str(e)}")
         return None
     
-def update_blog(blog_id: int, title: str, content: str, image_url: Optional[str]):
+def update_blog(blog_id: int, title: str, content: str, image_url: Optional[str], post_url: Optional[str]):
     """Fungsi untuk mengupdate blog ke database"""
     conn = get_connection()  # Membuka koneksi ke database
     try:
@@ -110,16 +108,18 @@ def update_blog(blog_id: int, title: str, content: str, image_url: Optional[str]
                 SET title = COALESCE(:title, title),
                     content = COALESCE(:content, content),
                     image_url = COALESCE(:image_url, image_url),
+                    post_url = COALESCE(:post_url, post_url),
                     updated_at = NOW()
                 WHERE id_blog = :id_blog
-                RETURNING id_blog, title, content, image_url, created_at, updated_at;
+                RETURNING id_blog, title, content, image_url, post_url, created_at, updated_at;
             """)
-            
+
             result = connection.execute(query, {
                 "id_blog": blog_id,
                 "title": title,
                 "content": content,
-                "image_url": image_url
+                "image_url": image_url,
+                "post_url": post_url
             }).fetchone()  # Mengambil hasil satu baris hasil eksekusi query
 
             if result:
@@ -129,10 +129,11 @@ def update_blog(blog_id: int, title: str, content: str, image_url: Optional[str]
                     "title": result[1],
                     "content": result[2],
                     "image_url": result[3],
-                    "created_at": str(result[4]),
-                    "updated_at": str(result[5]),
+                    "post_url": result[4],
+                    "created_at": str(result[5]),
+                    "updated_at": str(result[6]),
                 }
-            return None  # Jika gagal menambah blog
+            return None  # Jika gagal
     except SQLAlchemyError as e:
         print(f"Database error occurred: {str(e)}")
         return None
